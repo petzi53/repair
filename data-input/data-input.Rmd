@@ -1,4 +1,36 @@
-# Repair Data
+---
+title: "Data Input"
+author: "[Peter Baumgartner](https://github.com/petzi53)"
+date: "Last updated: `r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    css: style.css
+    theme: united
+    toc: true
+    pandoc_args: --number-offset=1,0
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 3
+    number_sections: true
+    code_folding: show
+    code_download: true
+bibliography: references.bib
+link-citations: true
+---
+
+```{r setup}
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = TRUE) 
+```
+
+
+
+
+## Data Specification
+
+### Documentation of ORDS Version 0.21
 
 I took data from the website of the [Open Repair Alliance](https://openrepair.org/open-data/downloads/). The structure of the data follows the technical documentation of the [Open Repair Data Standard](https://standard.openrepair.org/) (ORDS Version 0.21). 
 
@@ -24,3 +56,74 @@ The value of the last column of the following table (`R data types`) is set by m
 | Record date         | record_date                   | Date. YYYY-MM-DD format. The date that the record was last updated.                                             | Date        |
 
 * Because of many NA's written as "????" I chose to import this column as "character".  
+
+
+### R Equivalent of ODRS 
+
+```{r data-spec}
+ords_spec <- cols(
+  id = col_character(),
+  data_provider = col_factor(levels = NULL, ordered = FALSE, include_na = FALSE),
+  country = col_factor(levels = NULL, ordered = FALSE, include_na = FALSE),
+  partner_product_category = col_character(),
+  product_category = col_factor(levels = NULL, ordered = FALSE, include_na = FALSE),
+  brand = col_character(),
+  year_of_manufacture = col_character(),
+  repair_status = col_factor(levels = NULL, ordered = FALSE, include_na = FALSE),
+  repair_barrier_if_end_of_life = col_factor(levels = NULL, ordered = FALSE, include_na = FALSE),
+  group_identifier = col_factor(levels = NULL, ordered = FALSE, include_na = FALSE),
+  event_date = col_date(format = "%Y-%m-%d"),
+  problem = col_character()
+)
+```
+
+
+
+## Import data
+
+### Fixit Clinic
+
+```{r read-data1, eval=FALSE}
+fixit_clinic <- read_csv("extdata/OpenRepairData_v0.2.1_FixitClinic_202009.csv", col_types = ords_spec)
+saveRDS(fixit_clinic, "data/fixit_clinic.rds")
+```
+
+
+
+### Repair Café International
+
+```{r read_data2, eval=FALSE}
+repair_cafe_int <- read_csv("extdata/OpenRepairData_v0.2.1_RepairCafeInternational_202009.csv", col_types = ords_spec)
+saveRDS(repair_cafe_int, "data/repair_cafe_int.rds")
+```
+
+### Repair Café Wales
+
+```{r read_data3, eval=FALSE}
+repair_cafe_wales <- read_csv("extdata/OpenRepairData_v0.2.1_RepairCafeWales_202009.csv", col_types = ords_spec)
+saveRDS(repair_cafe_wales, "data/repair_cafe_wales.rds")
+```
+
+### Restart Project
+
+```{r read_data4, eval=FALSE}
+restart_project <- read_csv("extdata/OpenRepairData_v0.2.1_RestartProject_202009.csv", col_types = ords_spec)
+saveRDS(restart_project, "data/restart_project.rds")
+```
+
+### Anstiftung
+
+```{r read_data5, eval=FALSE}
+anstiftung <- read_csv("extdata/OpenRepairData_v0.2.1_anstiftung_202009.csv", col_types = ords_spec)
+saveRDS(anstiftung, "data/anstiftung.rds")
+```
+
+## Join data
+
+All data have the same structure. So joining should not pose problems.
+
+```{r merge-data, eval=FALSE}
+repair_data <- bind_rows(anstiftung, fixit_clinic, repair_cafe_int, repair_cafe_wales, restart_project)
+saveRDS(repair_data, "data/repair_data.rds")
+```
+
